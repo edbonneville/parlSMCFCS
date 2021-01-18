@@ -7,7 +7,8 @@ Authors@R:
            role = c("aut", "cre"),
            email = "e.f.bonneville@lumc.nl")
 Description: The mice::parlmice alternative for substantive model compatible
-  fully conditional specification (smcfcs). Uses parallel package as backend.
+  fully conditional specification (smcfcs). Uses parallel package as backend,
+  and supports a progress bar.
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
@@ -16,4 +17,7 @@ Imports:
     smcfcs (>= 1.4.2),
     parallel,
     checkmate,
-    survival
+    survival,
+    pbapply,
+    abind
+License: MIT + file LICENSE
