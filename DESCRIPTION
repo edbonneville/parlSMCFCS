@@ -1,0 +1,19 @@
+Package: parlSMCFCS
+Title: Parallel wrapper for smcfcs
+Version: 0.0.1
+Authors@R: 
+    person(given = "Edouard F",
+           family = "Bonneville",
+           role = c("aut", "cre"),
+           email = "e.f.bonneville@lumc.nl")
+Description: The mice::parlmice alternative for substantive model compatible
+  fully conditional specification (smcfcs). Uses parallel package as backend.
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Imports: 
+    smcfcs (>= 1.4.2),
+    parallel,
+    checkmate,
+    survival
