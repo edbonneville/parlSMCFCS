@@ -2,7 +2,7 @@
 % Please edit documentation in R/parlsmcfcs.R
 \name{parlsmcfcs}
 \alias{parlsmcfcs}
-\title{Run smcfcs in parallel}
+\title{Run smcfcs imputations in parallel}
 \usage{
 parlsmcfcs(
   seed = NULL,
@@ -15,29 +15,54 @@ parlsmcfcs(
 )
 }
 \arguments{
-\item{seed}{Optional seed}
+\item{seed}{Optional seed, set as \code{set.seed} when \code{n_cores = 1},
+or as \code{parallel::clusterSetRNGStream} when \code{n_cores > 1}.}
 
-\item{m}{Number of imputed datasets}
+\item{m}{Number of imputed datasets to generate.}
 
-\item{m_per_core}{Optional integer of number of imputations per core.
+\item{m_per_core}{Optional number of imputations per core.
 Default is \code{floor(m / n_cores)}, which it cannot be larger than.}
 
-\item{n_cores}{Number of cores over which to split the m imputations}
+\item{n_cores}{Number of cores over which to split the \code{m} imputations. If
+\code{n_cores} is not divisible exactly by \code{m}, one of the cores will perform
+more/less imputations that the rest such that the final result still contains
+\code{m} imputed datasets.}
 
-\item{cl_type}{Either "PSOCK" or "FORK"}
+\item{cl_type}{Either "PSOCK" or "FORK". If running on a Windows system
+"PSOCK" is recommended, otherwise for Linux/Mac machines "FORK" tends to
+offer faster computation - see \link[mice]{parlmice}.}
 
 \item{outfile}{Optional character path to location for
 output from the workers. Useful to diagnose rejection sampling warnings.
-File path must end with output-filenames.txt}
+File path must be formulated as "path/to/filename.txt".}
 
-\item{...}{Additional arguments to pass on to smcfcs::smcfcs}
+\item{...}{Additional arguments to pass on to \link[smcfcs]{smcfcs}.}
 }
 \value{
-An object of type "smcfcs"
+An object of type "smcfcs", as would usually be returned from
+\link[smcfcs]{smcfcs}.
 }
 \description{
-Run smcfcs in parallel
+The \link[mice]{parlmice} alternative for imputations using the \link[smcfcs]{smcfcs} package,
+splitting \code{m} imputed datasets across multiple cores for parallel computations.
+Automatically supports a progress bar.
 }
 \examples{
-# Example here later...
+\dontrun{
+# Detect number of cores
+parallel::detectCores()
+
+imps <- parlSMCFCS::parlsmcfcs(
+seed = 2021,
+n_cores = parallel::detectCores() - 1,
+originaldata = smcfcs::ex_compet,
+m = 10,
+smtype = "compet",
+smformula = list(
+"Surv(t, d == 1) ~ x1 + x2",
+"Surv(t, d == 2) ~ x1 + x2"
+),
+method = c("", "", "norm", "norm")
+)
+}
 }

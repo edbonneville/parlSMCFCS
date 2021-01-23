@@ -1,5 +1,7 @@
 ---
 output: github_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -37,16 +39,21 @@ library(parlSMCFCS)
 
 ```{r load_lib_devtools, echo=FALSE, message=FALSE, warning=FALSE}
 devtools::load_all()
+library(ggplot2)
+
+theme_set(theme_bw(base_size = 14))
 ```
 
-Run the imputations on 3 cores
+Check number of cores
 
-```{r example, eval=FALSE}
-# Load
-
+```{r check_cores}
 # Detect number of cores
 parallel::detectCores() 
+```
 
+Run the imputations on 3 cores, plot
+
+```{r example, eval=FALSE}
 imps <- parlSMCFCS::parlsmcfcs(
   seed = 2021,
   n_cores = 3, # number of cores - 1
@@ -57,13 +64,33 @@ imps <- parlSMCFCS::parlsmcfcs(
     "Surv(t, d == 1) ~ x1 + x2",
     "Surv(t, d == 2) ~ x1 + x2"
   ),
-  numit = 15,
+  numit = 50,
   method = c("", "", "norm", "norm")
 )
 
 plot(imps)
 ```
 
-![](man/figures/README-example-1.png)
 
-## Possible benchmarks..
+```{r convergence_plot, echo=FALSE}
+imps <- readRDS("benchmarking/readme_imps.rds")
+plot(imps)
+```
+
+
+## Benchmarks
+
+(Figure to appear below)
+
+```{r benchmarking, echo=FALSE, eval=FALSE}
+# read the rds file, then plot
+# benches <- readRDS(...)
+
+ggplot(
+  data = benches,
+  aes(x = m, y = Time, colour = Cores, linetype = Cores)
+) +
+  geom_line(size = 1.5) +
+  labs(x = "Number of imputations (m)", y = "Time (seconds)")
+```
+

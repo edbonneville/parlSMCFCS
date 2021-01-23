@@ -1,24 +1,51 @@
-#' Run smcfcs in parallel
+#' Run smcfcs imputations in parallel
 #'
-#' @param seed Optional seed
-#' @param m Number of imputed datasets
-#' @param n_cores Number of cores over which to split the m imputations
-#' @param m_per_core Optional integer of number of imputations per core.
+#' The \link[mice]{parlmice} alternative for imputations using the \link[smcfcs]{smcfcs} package,
+#' splitting `m` imputed datasets across multiple cores for parallel computations.
+#' Automatically supports a progress bar.
+#'
+#' @param seed Optional seed, set as `set.seed` when `n_cores = 1`,
+#' or as `parallel::clusterSetRNGStream` when `n_cores > 1`.
+#' @param m Number of imputed datasets to generate.
+#' @param n_cores Number of cores over which to split the `m` imputations. If
+#' `n_cores` is not divisible exactly by `m`, one of the cores will perform
+#' more/less imputations that the rest such that the final result still contains
+#' `m` imputed datasets.
+#' @param m_per_core Optional number of imputations per core.
 #' Default is `floor(m / n_cores)`, which it cannot be larger than.
-#' @param cl_type Either "PSOCK" or "FORK"
+#' @param cl_type Either "PSOCK" or "FORK". If running on a Windows system
+#' "PSOCK" is recommended, otherwise for Linux/Mac machines "FORK" tends to
+#' offer faster computation - see \link[mice]{parlmice}.
 #' @param outfile Optional character path to location for
 #' output from the workers. Useful to diagnose rejection sampling warnings.
-#' File path must end with output-filenames.txt
-#' @param ... Additional arguments to pass on to smcfcs::smcfcs
+#' File path must be formulated as "path/to/filename.txt".
+#' @param ... Additional arguments to pass on to \link[smcfcs]{smcfcs}.
 #'
-#' @return An object of type "smcfcs"
+#' @return An object of type "smcfcs", as would usually be returned from
+#' \link[smcfcs]{smcfcs}.
 #' @export
 #'
 #' @importFrom survival Surv
 #' @importFrom smcfcs smcfcs
 #'
 #' @examples
-#' # Example here later...
+#' \dontrun{
+#' # Detect number of cores
+#' parallel::detectCores()
+#'
+#' imps <- parlSMCFCS::parlsmcfcs(
+#' seed = 2021,
+#' n_cores = parallel::detectCores() - 1,
+#' originaldata = smcfcs::ex_compet,
+#' m = 10,
+#' smtype = "compet",
+#' smformula = list(
+#' "Surv(t, d == 1) ~ x1 + x2",
+#' "Surv(t, d == 2) ~ x1 + x2"
+#' ),
+#' method = c("", "", "norm", "norm")
+#' )
+#' }
 parlsmcfcs <- function(seed = NULL,
                        m = 5,
                        m_per_core = NULL,
@@ -34,8 +61,7 @@ parlsmcfcs <- function(seed = NULL,
 
   if (any(check_args)) {
     wrong_args <- paste(names(args)[check_args], collapse = ", ")
-    mssg <- paste0("The following are not valid arguments of smcfcs::smcfcs : ",
-                   wrong_args)
+    mssg <- paste0("The following are not valid arguments of smcfcs::smcfcs : ", wrong_args)
     stop(mssg)
   }
 
@@ -45,7 +71,7 @@ parlsmcfcs <- function(seed = NULL,
   checkmate::assert_int(x = m_per_core, lower = 1, upper = floor(m / n_cores), null.ok = TRUE)
   checkmate::matchArg(x = cl_type, choices = c("PSOCK", "FORK"))
   checkmate::assert_int(x = n_cores, lower = 1, upper = min(parallel::detectCores(), m))
-  if (outfile != "") checkmate::assert_path_for_output(x = outfile)
+  if (outfile != "") checkmate::assert_path_for_output(x = outfile, overwrite = TRUE)
 
   # Standard smcfcs if n_cores = 1
   if (n_cores == 1) {
@@ -64,12 +90,11 @@ parlsmcfcs <- function(seed = NULL,
 
     parallel::clusterExport(
       cl = cl,
-      varlist = c("args", "imp_specs", "seed", "m", "n_cores", "cl_type",
-                  "Surv", "smcfcs"),
+      varlist = c("args", "imp_specs", "seed", "m", "n_cores", "cl_type", "Surv", "smcfcs"),
       envir = environment()
     )
 
-    # Run the imputations
+    # Run the imputations - with progress bar
     pbapply::pboptions(type = "txt")
     imps <- pbapply::pblapply(cl = cl, X = 1:length(imp_specs), function(x) {
       args$m <- imp_specs[x]

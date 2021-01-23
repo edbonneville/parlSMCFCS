@@ -29,14 +29,17 @@ Load the library
 library(parlSMCFCS)
 ```
 
-Run the imputations on 3 cores
+Check number of cores
 
 ``` r
-# Load
-
 # Detect number of cores
 parallel::detectCores() 
+#> [1] 4
+```
 
+Run the imputations on 3 cores, plot
+
+``` r
 imps <- parlSMCFCS::parlsmcfcs(
   seed = 2021,
   n_cores = 3, # number of cores - 1
@@ -47,13 +50,15 @@ imps <- parlSMCFCS::parlsmcfcs(
     "Surv(t, d == 1) ~ x1 + x2",
     "Surv(t, d == 2) ~ x1 + x2"
   ),
-  numit = 15,
+  numit = 50,
   method = c("", "", "norm", "norm")
 )
 
 plot(imps)
 ```
 
-![](man/figures/README-example-1.png)
+<img src="man/figures/README-convergence_plot-1.png" width="100%" />
 
-## Possible benchmarks..
+## Benchmarks
+
+(Figure to appear below)
