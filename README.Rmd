@@ -7,19 +7,41 @@ editor_options:
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r, include = FALSE}
+# Rmd settings
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  dev = "svg",
+  fig.retina = 3, 
+  fig.align = "center",
+  fig.width = 8,
+  fig.height = 5
+)
+
+# Load packages
+devtools::load_all()
+library(ggplot2)
+
+# Set ggplot2 theme
+theme_set(
+  theme_bw(base_size = 14) +
+    theme(
+      panel.background = element_rect(fill = "transparent"),
+      plot.background = element_rect(fill = "transparent", colour = NA), 
+      panel.grid.major = element_blank(), 
+      panel.grid.minor = element_blank(),
+      legend.background = element_rect(fill = "transparent", colour = NA), 
+      legend.box.background = element_rect(fill = "transparent", colour = NA) 
+  )
 )
 ```
 
 # parlSMCFCS
 
-The [`mice::parlmice`](https://www.gerkovink.com/parlMICE/Vignette_parlMICE.html) alternative for the [smcfcs](https://cran.r-project.org/web/packages/smcfcs/index.html) package: a basic wrapper that allows to run the imputations in parallel. 
+The [`mice::parlmice()`](https://www.gerkovink.com/parlMICE/Vignette_parlMICE.html) alternative for the [smcfcs](https://cran.r-project.org/web/packages/smcfcs/index.html) package: a basic wrapper that allows to run the substantive model compatible imputations in parallel. 
 
-This can save a substantial amount of computing time, particularly in cases when continuous variables are imputed and rejection sampling is needed.
+It uses the parallel package as backend, and supports a progress bar through the use of the [pbapply](https://github.com/psolymos/pbapply) package.
 
 ## Installation
 
@@ -29,29 +51,34 @@ You can install the package with:
 devtools::install_github("edbonneville/parlSMCFCS")
 ```
 
-## Example
+Otherwise, you can simply download the single [R script](R/parlsmcfcs.R) and source it directly (assuming dependencies have been installed).
 
-Load the library
+## Example
 
 ```{r load_lib, eval=FALSE}
 library(parlSMCFCS)
-```
-
-```{r load_lib_devtools, echo=FALSE, message=FALSE, warning=FALSE}
-devtools::load_all()
 library(ggplot2)
-
-theme_set(theme_bw(base_size = 14))
 ```
 
-Check number of cores
+First, check the number of available cores on your machine:
 
 ```{r check_cores}
 # Detect number of cores
 parallel::detectCores() 
 ```
 
-Run the imputations on 3 cores, plot
+Then, you can run the imputations with the exact same arguments as [`smcfcs::smcfcs()`](https://www.rdocumentation.org/packages/smcfcs/versions/1.4.2/topics/smcfcs). The only additional arguments to include are
+
+- `n_cores`: the number of cores to use. It is recommended to leave at least one free core on your machine for other tasks.
+- `cl_type`: the type of cluster to start, either "PSOCK" (recommended for windows) or "FORK" (recommended for Linux/Mac).
+- `seed`: optional seed value to reproduce the analysis. If run in parallel this is set with `parallel::clusterSetRNGStream(seed)`, otherwise with `n_cores = 1` it is simply set as `set.seed(seed)`.
+
+Additional optional arguments include
+
+- `m_per_core`: specifies number of imputed datasets per core, should you want to override the default of speading `m` across the `n_cores` as equally as possible.
+- `outfile`: path to a .txt file to store any printed output, such as rejection sampling warnings.
+
+We run `m = 10` imputations on the [`smcfcs::ex_compet`](https://www.rdocumentation.org/packages/smcfcs/versions/1.4.2/topics/ex_compet) dataset from the smcfcs package, which has two continuous covariates with missing data with a competing risks substantive model. We run them on 3 cores as follows
 
 ```{r example, eval=FALSE}
 imps <- parlSMCFCS::parlsmcfcs(
@@ -74,23 +101,25 @@ plot(imps)
 
 ```{r convergence_plot, echo=FALSE}
 imps <- readRDS("benchmarking/readme_imps.rds")
-plot(imps)
+plot(imps) + scale_color_brewer(palette = "Set3")
 ```
 
 
 ## Benchmarks
 
-(Figure to appear below)
+On the same [`smcfcs::ex_compet`](https://www.rdocumentation.org/packages/smcfcs/versions/1.4.2/topics/ex_compet) dataset, benchmarks were run for different `m` and `n_cores` using the [microbenchmark](https://github.com/joshuaulrich/microbenchmark) package with 5 replications. These were run on [SLURM](https://slurm.schedmd.com/documentation.html) cluster with `cl_type = "FORK"`. Below the mean computation times are plotted
 
-```{r benchmarking, echo=FALSE, eval=FALSE}
-# read the rds file, then plot
-# benches <- readRDS(...)
+```{r benchmarking, echo=FALSE, eval=TRUE}
+# Read the rds file, then plot
+benches <- readRDS("benchmarking/timings_data.rds")
 
 ggplot(
   data = benches,
-  aes(x = m, y = Time, colour = Cores, linetype = Cores)
+  aes(x = m, y = median_time, colour = Cores, linetype = Cores)
 ) +
   geom_line(size = 1.5) +
-  labs(x = "Number of imputations (m)", y = "Time (seconds)")
+  labs(x = "Number of imputations (m)", y = "Time (seconds)") +
+  scale_color_brewer(palette = "Dark2") +
+  theme(legend.position = "top")
 ```
 
