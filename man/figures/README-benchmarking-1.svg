@@ -167,7 +167,6 @@
 </clipPath>
 </defs>
 <g id="surface29">
-<rect x="0" y="0" width="576" height="360" style="fill:rgb(100%,100%,100%);fill-opacity:1;stroke:none;"/>
 <path style="fill:none;stroke-width:3.200935;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(10.588235%,61.960784%,46.666667%);stroke-opacity:1;stroke-miterlimit:10;" d="M 72.058594 304.03125 L 81.816406 299.152344 L 106.210938 286 L 130.609375 272.074219 L 179.402344 235.523438 L 301.390625 171.078125 L 545.359375 64.320313 "/>
 <path style="fill:none;stroke-width:3.200935;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(85.098039%,37.254902%,0.784314%);stroke-opacity:1;stroke-dasharray:6.40187,6.40187;stroke-miterlimit:10;" d="M 72.058594 306.015625 L 81.816406 303.644531 L 106.210938 298.171875 L 130.609375 289.949219 L 179.402344 271.085938 L 301.390625 235.839844 L 545.359375 181.453125 "/>
 <path style="fill:none;stroke-width:3.200935;stroke-linecap:butt;stroke-linejoin:round;stroke:rgb(45.882353%,43.921569%,70.196078%);stroke-opacity:1;stroke-dasharray:12.80374,6.40187;stroke-miterlimit:10;" d="M 72.058594 307.75 L 81.816406 303.34375 L 106.210938 299.105469 L 130.609375 294.261719 L 179.402344 282.722656 L 301.390625 256.273438 L 545.359375 223.246094 "/>
