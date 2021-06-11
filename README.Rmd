@@ -39,6 +39,10 @@ theme_set(
 
 # parlSMCFCS
 
+**Development moved permanently moved to [smcfcs::smcfcs.parallel](https://github.com/jwb133/smcfcs/blob/master/R/smcfcs_parallel.r) :-)**
+
+--
+
 The [`mice::parlmice()`](https://www.gerkovink.com/parlMICE/Vignette_parlMICE.html) alternative for the [smcfcs](https://cran.r-project.org/web/packages/smcfcs/index.html) package: a basic wrapper that allows to run the substantive model compatible imputations in parallel. 
 
 It uses the parallel package as backend, and supports a progress bar through the use of the [pbapply](https://github.com/psolymos/pbapply) package.
